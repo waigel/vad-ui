@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist-electron/main/index.js",
   "description": "VAD Ui",
   "author": "Johannes Waigel <johannes@waigel.com>",

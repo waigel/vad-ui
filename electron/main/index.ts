@@ -45,8 +45,14 @@ yargs.option('vad', {
 
 const argv = yargs.parse(process.argv) as Arguments;
 
-let audioFilePath = argv.audio ?? "./test/common_voice_de_17299420.wav"
-let vadFilePath = argv.vad ?? "./test/common_voice_de_17299420.vad"
+let audioFilePath = argv.audio
+let vadFilePath = argv.vad 
+
+if (process.env.VITE_DEV_SERVER_URL) {
+  // if we are in dev mode, we can use test files default
+  audioFilePath = "./test/common_voice_de_17299420.wav"
+  vadFilePath = "./test/common_voice_de_17299420.vad"
+}
 
 if (argv.file) {
   audioFilePath = argv.file

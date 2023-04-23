@@ -28,8 +28,9 @@
     deleteAppDataOnUninstall: false,
   },
   publish: {
-    provider: "generic",
+    provider: "github",
     channel: "latest",
-    url: "https://github.com/electron-vite/electron-vite-react/releases/download/",
+    owner: "waigel",
+    repo: "vad-ui",
   },
 }

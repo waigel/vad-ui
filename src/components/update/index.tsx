@@ -133,7 +133,8 @@ const Update = () => {
             </div>
           ) : (
             <div className="can-not-available">
-              {JSON.stringify(versionInfo ?? {}, null, 2)}
+              <p>Already the latest version.</p>
+              {/* {JSON.stringify(versionInfo ?? {}, null, 2)} */}
             </div>
           )}
         </div>
