@@ -55,7 +55,6 @@ function App() {
           >
             VAD Ui
           </Typography>
-          <Update />
         </Toolbar>
       </AppBar>
       <Box id="container">

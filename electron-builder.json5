@@ -27,10 +27,4 @@
     allowToChangeInstallationDirectory: true,
     deleteAppDataOnUninstall: false,
   },
-  publish: {
-    provider: "github",
-    channel: "latest",
-    owner: "waigel",
-    repo: "vad-ui",
-  },
 }
