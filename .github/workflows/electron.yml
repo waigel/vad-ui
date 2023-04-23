@@ -1,0 +1,27 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build_on_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          ref: electron
+      - uses: actions/setup-node@master
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*/*
+          draft: true
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ github.ref }}
+          name: ${{ github.ref }}
+          body: ${{ github.ref }}
