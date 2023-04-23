@@ -1,16 +1,45 @@
 name: CI
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release"
+        required: true
   push:
     branches:
       - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
 jobs:
+  #check if tag from package.json version exist if not create new tag
+  check_tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@master
+      - name: Get tag from package.json
+        id: package
+        run: |
+          echo "TAG=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - name: Create tag
+        run: |
+          git tag ${{ steps.package.outputs.TAG }}
+          git push --tags
+
   build_on_linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-        with:
-          ref: electron
       - uses: actions/setup-node@master
+      - name: Get tag from package.json
+        id: package
+        run: |
+          echo "TAG=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Install dependencies
         run: npm install
       - name: Build
@@ -22,6 +51,50 @@ jobs:
           draft: true
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{ github.ref }}
-          name: ${{ github.ref }}
+          tag_name: ${{ steps.package.outputs.TAG }}
+          name: ${{ steps.package.outputs.TAG }}
+          body: ${{ github.ref }}
+  builds_on_win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@master
+      - name: Get tag from package.json
+        id: package
+        run: |
+          echo "TAG=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*/*
+          draft: true
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.package.outputs.TAG }}
+          name: ${{ steps.package.outputs.TAG }}
+          body: ${{ github.ref }}
+
+  # commit draft
+  release:
+    runs-on: ubuntu-latest
+    needs: [build_on_linux, builds_on_win]
+    steps:
+      - uses: actions/checkout@master
+      - name: Get tag from package.json
+        id: package
+        run: |
+          echo "TAG=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*/*
+          draft: false
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.package.outputs.TAG }}
+          name: ${{ steps.package.outputs.TAG }}
           body: ${{ github.ref }}
