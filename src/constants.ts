@@ -1,0 +1,1 @@
+export const EVENT_GET_ARGUMENTS = 'get-arguments'
