@@ -1,7 +1,7 @@
-import Editor, { loader } from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
 import path from "path";
 import { Alert, Box } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface JsonEditorProps {
   jsonContent?: string;
@@ -12,21 +12,33 @@ export default function JsonEditor({
   updateJsonContent,
 }: JsonEditorProps) {
   const [jsonValidationError, setJsonValidationError] = useState<Error>();
+  const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>();
 
-  function ensureFirstBackSlash(str: string) {
-    return str.length > 0 && str.charAt(0) !== "/" ? "/" + str : str;
-  }
+  //Bug if resize the winbdow, the editor is not resized
+  //dirty fix if window size changes, trigger ref resize
+  useEffect(() => {
+    window.addEventListener("resize", () => {
+      editor?.layout();
+    });
+  }, [editor]);
 
-  function uriFromPath(_path: string) {
-    const pathName = path.resolve(_path).replace(/\\/g, "/");
-    return encodeURI("file://" + ensureFirstBackSlash(pathName));
-  }
+  useEffect(() => {
+    const editor = monaco.editor.create(
+      document.getElementById("editor") as HTMLDivElement,
+      {
+        value: jsonContent,
+        language: "json",
+      }
+    );
+    editor.onDidChangeModelContent((e) => {
+      updateJsonContent(editor.getValue());
+    });
 
-  loader.config({
-    paths: {
-      vs: uriFromPath(path.join("node_modules/monaco-editor/min/vs")),
-    },
-  });
+    setEditor(editor);
+    return () => {
+      editor.dispose();
+    };
+  }, []);
 
   const _updateJsonContent = (value: string | undefined) => {
     updateJsonContent(value);
@@ -54,12 +66,13 @@ export default function JsonEditor({
         </Alert>
       )}
 
-      <Editor
+      <Box height={"calc(100vh - 340px)"} width={"100vw"} id="editor" />
+      {/* <Editor
         height={"calc(100vh - 340px)"}
         defaultLanguage="json"
         defaultValue={jsonContent}
         onChange={_updateJsonContent}
-      />
+      /> */}
     </>
   );
 }
